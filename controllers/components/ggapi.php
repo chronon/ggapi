@@ -29,8 +29,6 @@ class GgapiComponent extends Object {
 		// combine the non-variable settings from config file with order data
 		$request['configfile'] = $config['configfile'];
 		$request = array_merge($request, $settings);
-		pr($request);
-		exit;
 
 		// converts the array into the GG API formatted XML file
 		$request = $this->__ggBuildXML($request);
