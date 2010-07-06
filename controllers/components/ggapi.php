@@ -10,27 +10,39 @@ class GgapiComponent extends Object {
     * Prepares, converts, posts, and receives a response from the  GG API.
     *
     * @param array $data required The order data, such as cardnumber, name, address, etc.
+    * @param boolean $testing optional Set to true to use testing config
     * @return array Response data or false if connection fails
     * @author chronon
     */
-	public function ggProcess($data) {
+	public function ggProcess($data, $testing = false) {
+	    $configType = 'live';
+	    if ($testing) {
+	        $configType = 'testing';
+	    }
 		// get required settings and config from config/settings.php
 		$settings = Configure::read('Ggapi.settings');
-		$config = Configure::read('Ggapi.config');
+		$config = Configure::read('Ggapi.'.$configType);
 
 		// field mapping
 		$request = $this->__ggPrep($data);
-		pr($request);
-		exit;
 
 		// combine the non-variable settings from config file with order data
+		$request['configfile'] = $config['configfile'];
 		$request = array_merge($request, $settings);
+		pr($request);
+		exit;
 
 		// converts the array into the GG API formatted XML file
 		$request = $this->__ggBuildXML($request);
 
 		// post the XML file, hopefully get a response
-		$response = $this->__ggPostXML($config['url'], $config['port'], $config['key'], $request);
+		$response = $this->__ggPostXML(
+		    $config['url'],
+		    $config['port'],
+		    $config['key'],
+		    $request,
+		    $testing
+		);
 
 		// check the response, convert to array if it's valid
 		if ($response) {
@@ -90,7 +102,7 @@ class GgapiComponent extends Object {
             }
         }
 
-        $dom->formatOutput = false; // set to true for debugging
+        $dom->formatOutput = false;
         $xml = $dom->saveXML();
         $xml = str_replace('<?xml version="1.0"?>', '', $xml);
         return $xml;
@@ -103,10 +115,11 @@ class GgapiComponent extends Object {
     * @param string $port
     * @param string $key
     * @param string $xml
+    * @param boolean $testing optional Set to true to use testing config
     * @return string XML response or false
     * @author chronon
     */
-	private function __ggPostXML($url, $port, $key, $xml) {
+	private function __ggPostXML($url, $port, $key, $xml, $testing = false) {
 	    $defaults = array(
 	        CURLOPT_POST => 1,
 	        CURLOPT_HEADER => 0,
@@ -117,10 +130,17 @@ class GgapiComponent extends Object {
 	        CURLOPT_FORBID_REUSE => 1,
 	        CURLOPT_TIMEOUT => 15,
 	        CURLOPT_POSTFIELDS => $xml,
-			CURLOPT_SSLCERT => $key,
-			CURLOPT_SSL_VERIFYHOST => 0, // testing only
-			CURLOPT_SSL_VERIFYPEER => 0 // testing only
+			CURLOPT_SSLCERT => $key
 	    );
+
+        // if using testing config, the SSL cert if invalid so these must be set to connect.
+	    if ($testing) {
+	        $testParams = array(
+	            CURLOPT_SSL_VERIFYHOST => 0,
+	            CURLOPT_SSL_VERIFYPEER => 0
+	        );
+	        $defaults = $defaults + $testParams;
+	    }
 
 	    $ch = curl_init();
 	    curl_setopt_array($ch, $defaults);
