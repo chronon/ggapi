@@ -1,5 +1,5 @@
-First Data Global Gateway API Component
-=======================================
+First Data Global Gateway API CakePHP Plugin Component
+======================================================
 
 The Ggapi component simplifies credit card processing using the First Data/Yourpay/Linkpoint Global Gateway API. It supports testing and live configurations, along with local to remote field mapping.
 
