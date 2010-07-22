@@ -1,7 +1,7 @@
 <?php
 class GgapiComponent extends Object {
 
-	public function initialize($controller) {
+	public function initialize($controller, $settings = array()) {
 		$this->controller = $controller;
 		Configure::load('Ggapi.settings');
 	}
