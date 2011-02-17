@@ -1,10 +1,10 @@
 <?php
 class GgapiComponent extends Object {
 
-	public function initialize($controller, $settings = array()) {
-		$this->controller = $controller;
-		Configure::load('Ggapi.settings');
-	}
+    public function initialize($controller, $settings = array()) {
+        $this->controller = $controller;
+        Configure::load('Ggapi.settings');
+    }
 
     /**
     * Prepares, converts, posts, and receives a response from the  GG API.
@@ -14,44 +14,44 @@ class GgapiComponent extends Object {
     * @return array Response data or false if connection fails
     * @author chronon
     */
-	public function ggProcess($data, $testing = false) {
-	    $configType = 'live';
-	    if ($testing) {
-	        $configType = 'testing';
-	    }
+    public function ggProcess($data, $testing = false) {
+        $configType = 'live';
+        if ($testing) {
+            $configType = 'testing';
+        }
 
-		// get required settings and config from config/settings.php
-		$settings = Configure::read('Ggapi.settings');
-		$config = Configure::read('Ggapi.'.$configType);
+        // get required settings and config from config/settings.php
+        $settings = Configure::read('Ggapi.settings');
+        $config = Configure::read('Ggapi.'.$configType);
 
-		// field mapping
-		$request = $this->__ggPrep($data);
+        // field mapping
+        $request = $this->__ggPrep($data);
 
-		// combine the non-variable settings from config file with order data
-		$request['configfile'] = $config['configfile'];
-		$request = array_merge($request, $settings);
+        // combine the non-variable settings from config file with order data
+        $request['configfile'] = $config['configfile'];
+        $request = array_merge($request, $settings);
 
-		// converts the array into the GG API formatted XML file
-		$request = $this->__ggBuildXML($request);
+        // converts the array into the GG API formatted XML file
+        $request = $this->__ggBuildXML($request);
 
-		// post the XML file, hopefully get a response
-		$response = $this->__ggPostXML(
-		    $config['url'],
-		    $config['port'],
-		    $config['key'],
-		    $request,
-		    $testing
-		);
+        // post the XML file, hopefully get a response
+        $response = $this->__ggPostXML(
+            $config['url'],
+            $config['port'],
+            $config['key'],
+            $request,
+            $testing
+        );
 
-		// check the response, convert to array if it's valid
-		if ($response) {
-			$response = $this->__ggDecodeXML($response);
-			if (is_array($response)) {
-				return $response;
-			}
-		}
-		return false;
-	}
+        // check the response, convert to array if it's valid
+        if ($response) {
+            $response = $this->__ggDecodeXML($response);
+            if (is_array($response)) {
+                return $response;
+            }
+        }
+        return false;
+    }
 
     /**
     * Matches local fields to GG API fields (field map in config/settings.php).
@@ -60,24 +60,24 @@ class GgapiComponent extends Object {
     * @return array Array key is per GG API specs with order values as val.
     * @author chronon
     */
- 	private function __ggPrep($data) {
-		$resData = array();
-		$fields = Configure::read('Ggapi.fields');
-		foreach ($data as $k => $v) {
-			if (isset($fields[$k])) {
-				if (!is_array($fields[$k])) {
-					$resData[$fields[$k]] = $v;
-				} else {
-					foreach ($fields[$k] as $ik => $iv) {
-						if (isset($fields[$k][$ik])) {
-							$resData[$iv] = $v[$ik];
-						}
-					}
-				}
-			}
-		}
-		return $resData;
-	}
+    private function __ggPrep($data) {
+        $resData = array();
+        $fields = Configure::read('Ggapi.fields');
+        foreach ($data as $k => $v) {
+            if (isset($fields[$k])) {
+                if (!is_array($fields[$k])) {
+                    $resData[$fields[$k]] = $v;
+                } else {
+                    foreach ($fields[$k] as $ik => $iv) {
+                        if (isset($fields[$k][$ik])) {
+                            $resData[$iv] = $v[$ik];
+                        }
+                    }
+                }
+            }
+        }
+        return $resData;
+    }
 
     /**
     * Format the array of data into an XML string for GG API.
@@ -88,7 +88,7 @@ class GgapiComponent extends Object {
     * @return string An XML string ready for submission
     * @author chronon
     */
-	private function __ggBuildXML($data) {
+    private function __ggBuildXML($data) {
         $fields = Configure::read('Ggapi.apiFields');
 
         $dom = new DomDocument;
@@ -105,7 +105,7 @@ class GgapiComponent extends Object {
         $xml = $dom->saveXML();
         $xml = str_replace('<?xml version="1.0"?>', '', $xml);
         return $xml;
-	}
+    }
 
     /**
     * Posts the XML string to GG API
@@ -118,38 +118,38 @@ class GgapiComponent extends Object {
     * @return string XML response or false
     * @author chronon
     */
-	private function __ggPostXML($url, $port, $key, $xml, $testing = false) {
-	    $defaults = array(
-	        CURLOPT_POST => 1,
-	        CURLOPT_HEADER => 0,
-	        CURLOPT_URL => $url,
-			CURLOPT_PORT => $port,
-	        CURLOPT_FRESH_CONNECT => 1,
-	        CURLOPT_RETURNTRANSFER => 1,
-	        CURLOPT_FORBID_REUSE => 1,
-	        CURLOPT_TIMEOUT => 15,
-	        CURLOPT_POSTFIELDS => $xml,
-			CURLOPT_SSLCERT => $key
-	    );
+    private function __ggPostXML($url, $port, $key, $xml, $testing = false) {
+        $defaults = array(
+            CURLOPT_POST => 1,
+            CURLOPT_HEADER => 0,
+            CURLOPT_URL => $url,
+            CURLOPT_PORT => $port,
+            CURLOPT_FRESH_CONNECT => 1,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_FORBID_REUSE => 1,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_POSTFIELDS => $xml,
+            CURLOPT_SSLCERT => $key
+        );
 
         // if using testing config, the SSL cert if invalid so these must be set to connect.
-	    if ($testing) {
-	        $testParams = array(
-	            CURLOPT_SSL_VERIFYHOST => 0,
-	            CURLOPT_SSL_VERIFYPEER => 0
-	        );
-	        $defaults = $defaults + $testParams;
-	    }
+        if ($testing) {
+            $testParams = array(
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSL_VERIFYPEER => 0
+            );
+            $defaults = $defaults + $testParams;
+        }
 
-	    $ch = curl_init();
-	    curl_setopt_array($ch, $defaults);
-	    if (!$result = curl_exec($ch)) {
-			return false;
-	    }
+        $ch = curl_init();
+        curl_setopt_array($ch, $defaults);
+        if (!$result = curl_exec($ch)) {
+            return false;
+        }
 
-	    curl_close($ch);
-	    return $result;
-	}
+        curl_close($ch);
+        return $result;
+    }
 
     /**
     * Converts the response XML into an array
@@ -158,15 +158,15 @@ class GgapiComponent extends Object {
     * @return array The response from the gateway
     * @author chronon
     */
-	private function __ggDecodeXML($xml) {
-		preg_match_all ("/<(.*?)>(.*?)\</", $xml, $out, PREG_SET_ORDER);
-		$n = 0;
-		$result = array();
-		while (isset($out[$n])) {
-			$result[$out[$n][1]] = strip_tags($out[$n][0]);
-			$n++;
-		}
-		return $result;
-	}
+    private function __ggDecodeXML($xml) {
+        preg_match_all ("/<(.*?)>(.*?)\</", $xml, $out, PREG_SET_ORDER);
+        $n = 0;
+        $result = array();
+        while (isset($out[$n])) {
+            $result[$out[$n][1]] = strip_tags($out[$n][0]);
+            $n++;
+        }
+        return $result;
+    }
 
 }
