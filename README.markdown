@@ -45,3 +45,9 @@ Example usage in your controller
     	);
     	$this->redirect(array('controller' => 'orders', 'action' => 'checkout'));
     }
+
+Blog post
+---------
+
+Possibly and/or eventually more documentaion and discussion available at
+[technokracy.net](http://technokracy.net/2010/07/06/First_Data_Global_Gateway_API_CakePHP_Plugin/)
