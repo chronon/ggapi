@@ -18,33 +18,33 @@ Requirements
 Example usage in your controller
 --------------------------------
 
-    // attempt the charge (array $data, boolean $testing)
-    $response = $this->Ggapi->ggProcess($data, true);
+	// attempt the charge (array $data, boolean $testing)
+	$response = $this->Ggapi->ggProcess($data, true);
 
-    // update the order table with the response
-    if ($response) {
-        if ($response['r_approved'] == 'APPROVED') {
-            // merge the response data with the order data
-            $this->data['Order'] = array_merge($this->data['Order'], $response);
-        } else {
-            // card was DECLINED
-            $error = explode(':', $response['r_error']);
-            $this->Session->setFlash(
-                'Your credit card was declined. The message was: '.$error[1],
-                'modal',
-                array('class' => 'modal error')
-            );
-            $this->redirect(array('controller' => 'orders', 'action' => 'checkout'));
-        }
-    } else {
-        // no response from the gateway
-        $this->Session->setFlash(
-            'There was a problem connecting to our payment gateway, please try again.',
-            'modal',
-            array('class' => 'modal error')
-        );
-        $this->redirect(array('controller' => 'orders', 'action' => 'checkout'));
-    }
+	// update the order table with the response
+	if ($response) {
+		if ($response['r_approved'] == 'APPROVED') {
+			// merge the response data with the order data
+			$this->data['Order'] = array_merge($this->data['Order'], $response);
+		} else {
+			// card was DECLINED
+			$error = explode(':', $response['r_error']);
+			$this->Session->setFlash(
+				'Your credit card was declined. The message was: '.$error[1],
+				'modal',
+				array('class' => 'modal error')
+			);
+			$this->redirect(array('controller' => 'orders', 'action' => 'checkout'));
+		}
+	} else {
+		// no response from the gateway
+		$this->Session->setFlash(
+			'There was a problem connecting to our payment gateway, please try again.',
+			'modal',
+			array('class' => 'modal error')
+		);
+		$this->redirect(array('controller' => 'orders', 'action' => 'checkout'));
+	}
 
 Blog post
 ---------
