@@ -96,8 +96,10 @@ class GgapiComponent extends Object {
 		foreach ($fields as $key => $val) {
 			$$key = $order->appendChild($dom->createElement($key));
 			foreach ($val as $k => $v) {
-				$kk = $$key->appendChild($dom->createElement($v));
-				$kk->appendChild($dom->createTextNode($data[$v]));
+			    if(isset($data[$v])) {
+					$kk = $$key->appendChild($dom->createElement($v));
+					$kk->appendChild($dom->createTextNode($data[$v]));
+				}
 			}
 		}
 
